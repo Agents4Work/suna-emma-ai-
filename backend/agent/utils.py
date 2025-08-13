@@ -7,6 +7,9 @@ from utils.config import config
 from services import redis
 from run_agent_background import update_agent_run_status
 
+# Import no-auth bypass functions
+from utils.no_auth import no_auth_check_agent_run_limit, no_auth_check_agent_count_limit
+
 
 async def _cleanup_redis_response_list(agent_run_id: str):
     try:
@@ -84,11 +87,24 @@ async def stop_agent_run(db, agent_run_id: str, error_message: Optional[str] = N
 async def check_agent_run_limit(client, account_id: str) -> Dict[str, Any]:
     """
     Check if the account has reached the limit of 3 parallel agent runs within the past 24 hours.
-    
+
     Returns:
         Dict with 'can_start' (bool), 'running_count' (int), 'running_thread_ids' (list)
     """
     try:
+        # Check if no-auth mode is enabled - bypass all limits
+        if getattr(config, 'NO_AUTH_MODE', False):
+            return await no_auth_check_agent_run_limit(client, account_id)
+
+        # Handle anonymous users - allow limited concurrent runs
+        if account_id == "anonymous":
+            logger.info("Anonymous user detected - allowing limited concurrent agent runs")
+            return {
+                'can_start': True,
+                'running_count': 0,
+                'running_thread_ids': []
+            }
+
         result = await Cache.get(f"agent_run_limit:{account_id}")
         if result:
             return result
@@ -96,9 +112,9 @@ async def check_agent_run_limit(client, account_id: str) -> Dict[str, Any]:
         # Calculate 24 hours ago
         twenty_four_hours_ago = datetime.now(timezone.utc) - timedelta(hours=24)
         twenty_four_hours_ago_iso = twenty_four_hours_ago.isoformat()
-        
+
         logger.debug(f"Checking agent run limit for account {account_id} since {twenty_four_hours_ago_iso}")
-        
+
         # Get all threads for this account
         threads_result = await client.table('threads').select('thread_id').eq('account_id', account_id).execute()
         
@@ -142,6 +158,10 @@ async def check_agent_run_limit(client, account_id: str) -> Dict[str, Any]:
 
 async def check_agent_count_limit(client, account_id: str) -> Dict[str, Any]:
     try:
+        # Check if no-auth mode is enabled - bypass all limits
+        if getattr(config, 'NO_AUTH_MODE', False):
+            return await no_auth_check_agent_count_limit(client, account_id)
+
         # In local mode, allow practically unlimited custom agents
         if config.ENV_MODE.value == "local":
             return {

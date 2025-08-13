@@ -4,14 +4,14 @@ import { getThread, getProject } from '@/lib/api-server';
 export async function generateMetadata({ params }): Promise<Metadata> {
   const { threadId } = await params;
   const fallbackMetaData = {
-    title: 'Shared Conversation | Kortix Suna',
-    description: 'Replay this Agent conversation on Kortix Suna',
+    title: 'Shared Conversation | EMMA AI',
+    description: 'Replay this Agent conversation on EMMA AI',
     alternates: {
       canonical: `${process.env.NEXT_PUBLIC_URL}/share/${threadId}`,
     },
     openGraph: {
-      title: 'Shared Conversation | Kortix Suna',
-      description: 'Replay this Agent conversation on Kortix Suna',
+      title: 'Shared Conversation | EMMA AI',
+      description: 'Replay this Agent conversation on EMMA AI',
       images: [`${process.env.NEXT_PUBLIC_URL}/share-page/og-fallback.png`],
     },
   };

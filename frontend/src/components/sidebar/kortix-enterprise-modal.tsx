@@ -17,7 +17,7 @@ interface EnterpriseModalProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export function KortixEnterpriseModal({ 
+export function EmmaEnterpriseModal({
   children,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange
@@ -65,7 +65,7 @@ export function KortixEnterpriseModal({
               <div className="mb-6 flex-shrink-0">
                 <Image
                   src={isDarkMode ? '/kortix-logo-white.svg' : '/kortix-logo.svg'}
-                  alt="Kortix Logo"
+                  alt="EMMA AI Logo"
                   width={80}
                   height={28}
                   className="h-7 w-auto"
@@ -135,4 +135,5 @@ export function KortixEnterpriseModal({
 }
 
 // Export with original name for backwards compatibility
-export const KortixProcessModal = KortixEnterpriseModal;
+export const KortixProcessModal = EmmaEnterpriseModal;
+export const EmmaProcessModal = EmmaEnterpriseModal;

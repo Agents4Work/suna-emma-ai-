@@ -1,13 +1,12 @@
 'use client';
 
-import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
-interface KortixLogoProps {
+interface EmmaLogoProps {
   size?: number;
 }
-export function KortixLogo({ size = 24 }: KortixLogoProps) {
+export function EmmaLogo({ size = 24 }: EmmaLogoProps) {
   const { theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -21,13 +20,14 @@ export function KortixLogo({ size = 24 }: KortixLogoProps) {
   );
 
   return (
-    <Image
-        src="/kortix-symbol.svg"
-        alt="Kortix"
-        width={size}
-        height={size}
-        className={`${shouldInvert ? 'invert' : ''} flex-shrink-0`}
-        style={{ width: size, height: size, minWidth: size, minHeight: size }}
-      />
+    <div
+      className={`${shouldInvert ? 'text-white' : 'text-black'} flex-shrink-0 font-bold flex items-center justify-center`}
+      style={{ width: size, height: size, minWidth: size, minHeight: size, fontSize: size * 0.4 }}
+    >
+      EMMA
+    </div>
   );
 }
+
+// Keep the old export for backward compatibility
+export const KortixLogo = EmmaLogo;

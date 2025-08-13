@@ -1,7 +1,5 @@
-import type { NextConfig } from 'next';
-
-const nextConfig = (): NextConfig => ({
-  output: (process.env.NEXT_OUTPUT as 'standalone') || undefined,
+const nextConfig = () => ({
+  output: process.env.NEXT_OUTPUT || undefined,
   async rewrites() {
     return [
       {
@@ -21,4 +19,4 @@ const nextConfig = (): NextConfig => ({
   skipTrailingSlashRedirect: true,
 });
 
-export default nextConfig;
+module.exports = nextConfig;

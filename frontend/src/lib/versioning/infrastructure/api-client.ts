@@ -8,20 +8,24 @@ export class SupabaseApiClient implements IApiClient {
   private async getAuthHeaders(): Promise<Record<string, string>> {
     const agentPlaygroundEnabled = await isFlagEnabled('custom_agents');
     if (!agentPlaygroundEnabled) {
-      throw new Error('Custom agents is not enabled');
+      // Return basic headers if feature is disabled
+      return {
+        'Content-Type': 'application/json',
+      };
     }
-    
+
     const supabase = createClient();
     const { data: { session } } = await supabase.auth.getSession();
 
-    if (!session) {
-      throw new Error('You must be logged in');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
     }
 
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.access_token}`,
-    };
+    return headers;
   }
 
   async get<T>(url: string): Promise<T> {

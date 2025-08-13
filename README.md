@@ -144,21 +144,42 @@ Supabase-powered data layer handling authentication, user management, agent conf
 
 ## 🚀 Quick Start
 
-Get your Kortix platform running in minutes with our automated setup wizard:
+### 🌐 **Recommended: Start with Ngrok (Internet Access)**
 
-### 1️⃣ Clone the Repository
+For the best experience with internet accessibility and no authentication hassles:
+
+```bash
+git clone https://github.com/kortix-ai/suna.git
+cd suna
+./start-app.sh
+```
+
+This automatically:
+- ✅ Starts ngrok tunnels for internet access
+- ✅ Disables authentication (no login required)
+- ✅ Configures all environment variables
+- ✅ Starts frontend and backend services
+- ✅ Provides live URLs you can share
+
+**See [START-WITH-NGROK.md](./START-WITH-NGROK.md) for detailed instructions.**
+
+### 🏠 **Alternative: Local Setup with Wizard**
+
+For local-only development:
+
+#### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/kortix-ai/suna.git
 cd suna
 ```
 
-### 2️⃣ Run the Setup Wizard
+#### 2️⃣ Run the Setup Wizard
 ```bash
 python setup.py
 ```
 The wizard will guide you through 14 steps with progress saving, so you can resume if interrupted.
 
-### 3️⃣ Start the Platform
+#### 3️⃣ Start the Platform
 ```bash
 python start.py
 ```

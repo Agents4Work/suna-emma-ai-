@@ -9,6 +9,12 @@ import os
 from services.supabase import DBConnection
 from services import redis
 
+# Import no-auth bypass functions
+from utils.no_auth import (
+    no_auth_get_user_id, no_auth_get_optional_user_id, no_auth_get_stream_user_id,
+    no_auth_verify_thread_access, no_auth_verify_agent_access, no_auth_verify_admin_api_key
+)
+
 async def _get_user_id_from_account_cached(account_id: str) -> Optional[str]:
     """
     Get user_id from account_id with Redis caching for performance
@@ -78,6 +84,9 @@ async def get_current_user_id_from_jwt(request: Request) -> str:
     Raises:
         HTTPException: If no valid token is found or if the token is invalid
     """
+    # Check if no-auth mode is enabled
+    if getattr(config, 'NO_AUTH_MODE', False):
+        return await no_auth_get_user_id(request)
 
     x_api_key = request.headers.get('x-api-key')
 
@@ -173,6 +182,20 @@ async def get_current_user_id_from_jwt(request: Request) -> str:
             headers={"WWW-Authenticate": "Bearer"}
         )
 
+async def get_optional_user_id_from_jwt(request: Request) -> Optional[str]:
+    """
+    Extract user ID from JWT if present, but don't require authentication.
+    Returns None if no valid authentication is found.
+    """
+    # Check if no-auth mode is enabled
+    if getattr(config, 'NO_AUTH_MODE', False):
+        return await no_auth_get_optional_user_id(request)
+
+    try:
+        return await get_current_user_id_from_jwt(request)
+    except HTTPException:
+        return None
+
 async def get_account_id_from_thread(client, thread_id: str) -> str:
     """
     Extract and verify the account ID from the thread.
@@ -243,6 +266,10 @@ async def get_user_id_from_stream_auth(
     Raises:
         HTTPException: If no valid token is found or if the token is invalid
     """
+    # Check if no-auth mode is enabled
+    if getattr(config, 'NO_AUTH_MODE', False):
+        return await no_auth_get_stream_user_id(request, token)
+
     try:
         # First, try the standard authentication (handles both API keys and Authorization header)
         try:
@@ -304,6 +331,10 @@ async def verify_thread_access(client, thread_id: str, user_id: str):
     Raises:
         HTTPException: If the user doesn't have access to the thread
     """
+    # Check if no-auth mode is enabled
+    if getattr(config, 'NO_AUTH_MODE', False):
+        return await no_auth_verify_thread_access(client, thread_id, user_id)
+
     try:
         # Query the thread to get account information
         thread_result = await client.table('threads').select('*').eq('thread_id', thread_id).execute()
@@ -315,7 +346,15 @@ async def verify_thread_access(client, thread_id: str, user_id: str):
 
         if thread_data['account_id'] == user_id:
             return True
-        
+
+        # Handle anonymous users - they can only access anonymous threads or public threads
+        if user_id == "anonymous":
+            # Anonymous users can access anonymous threads
+            if thread_data['account_id'] == "anonymous":
+                return True
+            # Anonymous users can also access public threads/projects
+            # Continue to check if project is public below
+
         # Check if project is public
         project_id = thread_data.get('project_id')
         if project_id:
@@ -325,8 +364,13 @@ async def verify_thread_access(client, thread_id: str, user_id: str):
                     return True
             
         account_id = thread_data.get('account_id')
+
+        # Anonymous users cannot access authenticated user accounts
+        if user_id == "anonymous" and account_id != "anonymous":
+            raise HTTPException(status_code=403, detail="Anonymous users cannot access private threads")
+
         # When using service role, we need to manually check account membership instead of using current_user_account_role
-        if account_id:
+        if account_id and user_id != "anonymous":
             account_user_result = await client.schema('basejump').from_('account_user').select('account_role').eq('user_id', user_id).eq('account_id', account_id).execute()
             if account_user_result.data and len(account_user_result.data) > 0:
                 return True
@@ -385,6 +429,10 @@ async def get_optional_user_id(request: Request) -> Optional[str]:
         return None
 
 async def verify_admin_api_key(x_admin_api_key: Optional[str] = Header(None)):
+    # Check if no-auth mode is enabled
+    if getattr(config, 'NO_AUTH_MODE', False):
+        return await no_auth_verify_admin_api_key(x_admin_api_key)
+
     if not config.KORTIX_ADMIN_API_KEY:
         raise HTTPException(
             status_code=500,

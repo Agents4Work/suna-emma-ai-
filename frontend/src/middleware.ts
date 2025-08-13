@@ -27,34 +27,16 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-  // This refreshes the Auth token and is required for server-side auth
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // Define protected routes
-  const protectedRoutes = ['/dashboard', '/agents', '/projects', '/settings', '/invitation']
-  const authRoutes = ['/auth', '/login', '/signup']
-  
-  const isProtectedRoute = protectedRoutes.some(route => 
-    request.nextUrl.pathname.startsWith(route)
-  )
-  const isAuthRoute = authRoutes.some(route => 
-    request.nextUrl.pathname.startsWith(route)
-  )
-
-  // Redirect unauthenticated users from protected routes
-  if (isProtectedRoute && !user) {
-    const redirectUrl = new URL('/auth', request.url)
-    redirectUrl.searchParams.set('returnUrl', request.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
+  // For EMMA AI, we don't require authentication, so we'll handle auth errors gracefully
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+  } catch (error) {
+    // Silently handle auth errors - EMMA AI works without authentication
+    console.log('Auth middleware: No authentication required for EMMA AI')
   }
 
-  // Redirect authenticated users away from auth routes
-  if (isAuthRoute && user) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:

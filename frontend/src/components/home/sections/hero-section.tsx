@@ -16,23 +16,16 @@ import {
 import { useInitiateAgentMutation } from '@/hooks/react-query/dashboard/use-initiate-agent';
 import { useThreadQuery } from '@/hooks/react-query/threads/use-threads';
 import { generateThreadName } from '@/lib/actions/threads';
-import GoogleSignIn from '@/components/GoogleSignIn';
+
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogOverlay,
-} from '@/components/ui/dialog';
+
 import { BillingErrorAlert } from '@/components/billing/usage-limit-alert';
 import { useBillingError } from '@/hooks/useBillingError';
 import { useAccounts } from '@/hooks/use-accounts';
 import { isLocalMode, config } from '@/lib/config';
 import { toast } from 'sonner';
 import { useModal } from '@/hooks/use-modal-store';
-import GitHubSignIn from '@/components/GithubSignIn';
+
 import { ChatInput, ChatInputHandles } from '@/components/thread/chat-input/chat-input';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
 import { createQueryHook } from '@/hooks/use-query';
@@ -41,10 +34,7 @@ import { getAgents } from '@/hooks/react-query/agents/utils';
 import { AgentRunLimitDialog } from '@/components/thread/agent-run-limit-dialog';
 import { Examples } from '@/components/dashboard/examples';
 
-// Custom dialog overlay with blur effect
-const BlurredDialogOverlay = () => (
-  <DialogOverlay className="bg-background/40 backdrop-blur-md" />
-);
+
 
 // Constant for localStorage key to ensure consistency
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
@@ -99,8 +89,7 @@ export function HeroSection() {
 
   const agents = agentsResponse?.agents || [];
 
-  // Auth dialog state
-  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+
 
   useEffect(() => {
     setMounted(true);
@@ -130,18 +119,7 @@ export function HeroSection() {
     };
   }, [scrollY]);
 
-  useEffect(() => {
-    if (authDialogOpen && inputValue.trim()) {
-      localStorage.setItem(PENDING_PROMPT_KEY, inputValue.trim());
-    }
-  }, [authDialogOpen, inputValue]);
 
-  useEffect(() => {
-    if (authDialogOpen && user && !isLoading) {
-      setAuthDialogOpen(false);
-      router.push('/dashboard');
-    }
-  }, [user, isLoading, authDialogOpen, router]);
 
   useEffect(() => {
     if (threadQuery.data && initiatedThreadId) {
@@ -162,10 +140,9 @@ export function HeroSection() {
   ) => {
     if ((!message.trim() && !chatInputRef.current?.getPendingFiles().length) || isSubmitting) return;
 
-    // If user is not logged in, save prompt and show auth dialog
+    // Allow usage without authentication - redirect directly to dashboard
     if (!user && !isLoading) {
-      localStorage.setItem(PENDING_PROMPT_KEY, message.trim());
-      setAuthDialogOpen(true);
+      router.push('/dashboard');
       return;
     }
 
@@ -360,78 +337,7 @@ export function HeroSection() {
       </div>
         <div className="mb-8 sm:mb-16 sm:mt-32 mx-auto"></div>
 
-      {/* Auth Dialog */}
-      <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
-        <BlurredDialogOverlay />
-        <DialogContent className="sm:max-w-md rounded-xl bg-background border border-border">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-xl font-medium">
-                Sign in to continue
-              </DialogTitle>
-              {/* <button 
-                onClick={() => setAuthDialogOpen(false)}
-                className="rounded-full p-1 hover:bg-muted transition-colors"
-              >
-                <X className="h-4 w-4 text-muted-foreground" />
-              </button> */}
-            </div>
-            <DialogDescription className="text-muted-foreground">
-              Sign in or create an account to talk with Suna
-            </DialogDescription>
-          </DialogHeader>
 
-
-
-          {/* OAuth Sign In */}
-          <div className="w-full">
-            <GoogleSignIn returnUrl="/dashboard" />
-            <GitHubSignIn returnUrl="/dashboard" />
-          </div>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[#F3F4F6] dark:bg-[#F9FAFB]/[0.02] text-muted-foreground">
-                or continue with email
-              </span>
-            </div>
-          </div>
-
-          {/* Sign in options */}
-          <div className="space-y-4 pt-4">
-            <Link
-              href={`/auth?returnUrl=${encodeURIComponent('/dashboard')}`}
-              className="flex h-12 items-center justify-center w-full text-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-md"
-              onClick={() => setAuthDialogOpen(false)}
-            >
-              Sign in with email
-            </Link>
-
-            <Link
-              href={`/auth?mode=signup&returnUrl=${encodeURIComponent('/dashboard')}`}
-              className="flex h-12 items-center justify-center w-full text-center rounded-full border border-border bg-background hover:bg-accent/20 transition-all"
-              onClick={() => setAuthDialogOpen(false)}
-            >
-              Create new account
-            </Link>
-          </div>
-
-          <div className="mt-4 text-center text-xs text-muted-foreground">
-            By continuing, you agree to our{' '}
-            <Link href="/terms" className="text-primary hover:underline">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" className="text-primary hover:underline">
-              Privacy Policy
-            </Link>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Add Billing Error Alert here */}
       <BillingErrorAlert

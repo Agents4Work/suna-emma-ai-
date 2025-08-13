@@ -72,12 +72,6 @@ export default function DashboardLayoutContent({
   // API health is now managed by useApiHealth hook
   const isApiHealthy = healthData?.status === 'ok' && !healthError;
 
-  // Check authentication status
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/auth');
-    }
-  }, [user, isLoading, router]);
 
   if (maintenanceNoticeQuery.data?.enabled) {
     const now = new Date();
@@ -105,18 +99,13 @@ export default function DashboardLayoutContent({
     );
   }
 
-  // Show loading state while checking auth or health
-  if (isLoading || isCheckingHealth) {
+  // Show loading state while checking health
+  if (isCheckingHealth) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  // Don't render anything if not authenticated
-  if (!user) {
-    return null;
   }
 
   // Show maintenance page if API is not healthy (but not during initial loading)

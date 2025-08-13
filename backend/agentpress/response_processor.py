@@ -19,8 +19,9 @@ from utils.logger import logger
 from agentpress.tool import ToolResult
 from agentpress.tool_registry import ToolRegistry
 from agentpress.xml_tool_parser import XMLToolParser
-from langfuse.client import StatefulTraceClient
-from services.langfuse import langfuse
+# Temporarily disabled for no-auth mode
+# from langfuse.client import StatefulTraceClient
+# from services.langfuse import langfuse
 from utils.json_helpers import (
     ensure_dict, ensure_list, safe_json_parse, 
     to_json_string, format_for_yield
@@ -86,7 +87,7 @@ class ProcessorConfig:
 class ResponseProcessor:
     """Processes LLM responses, extracting and executing tool calls."""
     
-    def __init__(self, tool_registry: ToolRegistry, add_message_callback: Callable, trace: Optional[StatefulTraceClient] = None, is_agent_builder: bool = False, target_agent_id: Optional[str] = None, agent_config: Optional[dict] = None):
+    def __init__(self, tool_registry: ToolRegistry, add_message_callback: Callable, trace: Optional[Any] = None, is_agent_builder: bool = False, target_agent_id: Optional[str] = None, agent_config: Optional[dict] = None):
         """Initialize the ResponseProcessor.
         
         Args:
@@ -97,7 +98,7 @@ class ResponseProcessor:
         """
         self.tool_registry = tool_registry
         self.add_message = add_message_callback
-        self.trace = trace or langfuse.trace(name="anonymous:response_processor")
+        self.trace = trace  # Disabled langfuse for no-auth mode
         # Initialize the XML parser
         self.xml_parser = XMLToolParser()
         self.is_agent_builder = is_agent_builder

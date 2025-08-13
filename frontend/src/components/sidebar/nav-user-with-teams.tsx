@@ -147,7 +147,7 @@ export function NavUserWithTeams({
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push('/auth');
+    router.push('/');
   };
 
   const getInitials = (name: string) => {

@@ -3,10 +3,10 @@ from typing import Dict, Any, List
 from agent.prompt import SYSTEM_PROMPT
 
 class SunaConfig:
-    NAME = "Suna"
-    DESCRIPTION = "Suna is your AI assistant with access to various tools and integrations to help you with tasks across domains."
-    AVATAR = "🌞"
-    AVATAR_COLOR = "#F59E0B"
+    NAME = "EMMA AI"
+    DESCRIPTION = "EMMA AI is your intelligent marketing assistant that helps you create compelling content, optimize campaigns, and grow your business."
+    AVATAR = "🎯"
+    AVATAR_COLOR = "#8B5CF6"
     DEFAULT_MODEL = "anthropic/claude-sonnet-4-20250514"
     SYSTEM_PROMPT = SYSTEM_PROMPT
 

@@ -37,6 +37,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
       } catch (error) {
+        // Silently handle auth errors for EMMA AI - no authentication required
+        console.log('Auth session not available, continuing without authentication');
+        setSession(null);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -46,23 +50,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
+        try {
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
 
-        if (isLoading) setIsLoading(false);
-        switch (event) {
-          case 'SIGNED_IN':
-            if (newSession?.user) {
-              await checkAndInstallSunaAgent(newSession.user.id, newSession.user.created_at);
-            }
-            break;
-          case 'SIGNED_OUT':
-            break;
-          case 'TOKEN_REFRESHED':
-            break;
-          case 'MFA_CHALLENGE_VERIFIED':
-            break;
-          default:
+          if (isLoading) setIsLoading(false);
+          switch (event) {
+            case 'SIGNED_IN':
+              if (newSession?.user) {
+                try {
+                  await checkAndInstallSunaAgent(newSession.user.id, newSession.user.created_at);
+                } catch (error) {
+                  console.log('Failed to install agent, continuing without authentication');
+                }
+              }
+              break;
+            case 'SIGNED_OUT':
+              break;
+            case 'TOKEN_REFRESHED':
+              break;
+            case 'MFA_CHALLENGE_VERIFIED':
+              break;
+            default:
+          }
+        } catch (error) {
+          console.log('Auth state change error, continuing without authentication');
+          setSession(null);
+          setUser(null);
+          if (isLoading) setIsLoading(false);
         }
       },
     );
@@ -94,7 +109,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    // For EMMA AI, return a default context instead of throwing an error
+    console.log('useAuth used outside AuthProvider, returning default values');
+    return {
+      supabase: createClient(),
+      session: null,
+      user: null,
+      isLoading: false,
+      signOut: async () => {},
+    };
   }
   return context;
 };

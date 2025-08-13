@@ -1,0 +1,26 @@
+# Ngrok configuration for Suna development
+# Copy this file to ~/.config/ngrok/ngrok.yml (Linux/Mac) or %USERPROFILE%\.ngrok2\ngrok.yml (Windows)
+# Replace YOUR_AUTHTOKEN with your actual ngrok authtoken from https://dashboard.ngrok.com/get-started/your-authtoken
+
+authtoken: 31EnNIYH75XZ9qmjfzDRu0JYe6N_7fDuFWQRyuZXCNijsuJ58
+version: "2"
+
+# Define tunnels for frontend and backend
+tunnels:
+  frontend:
+    addr: 3000
+    proto: http
+    # Optional: Use a custom subdomain if you have a paid plan
+    # subdomain: my-suna-frontend
+    
+  backend:
+    addr: 8000
+    proto: http
+    # Optional: Use a custom subdomain if you have a paid plan
+    # subdomain: my-suna-backend
+
+# Optional: Configure regions (us, eu, ap, au, sa, jp, in)
+# region: us
+
+# Optional: Configure web interface
+web_addr: localhost:4040

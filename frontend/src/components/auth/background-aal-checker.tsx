@@ -21,10 +21,10 @@ interface BackgroundAALCheckerProps {
  * 
  * Does NOT show loading states or block the UI - runs entirely in background.
  */
-export function BackgroundAALChecker({ 
-  children, 
-  redirectTo = '/auth/phone-verification',
-  enabled = true 
+export function BackgroundAALChecker({
+  children,
+  redirectTo = '/dashboard',
+  enabled = false
 }: BackgroundAALCheckerProps) {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();

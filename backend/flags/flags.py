@@ -46,9 +46,15 @@ class FeatureFlagManager:
             return enabled == 'true' if enabled else False
         except Exception as e:
             logger.error(f"Failed to check feature flag {key}: {e}")
-            # Return False by default if Redis is unavailable
-            return False
-    
+            # Fall back to local flags if Redis is unavailable
+            return self._get_local_flag(key)
+
+    def _get_local_flag(self, key: str) -> bool:
+        """Get local feature flag value when Redis is unavailable"""
+        # Import local flags to avoid circular imports
+        import flags.flags as local_flags
+        return getattr(local_flags, key, False)
+
     async def get_flag(self, key: str) -> Optional[Dict[str, str]]:
         """Get feature flag details"""
         try:

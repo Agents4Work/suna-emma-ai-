@@ -58,11 +58,11 @@ export interface PricingTier {
 }
 
 export const siteConfig = {
-  name: 'Kortix Suna',
-  description: 'The Generalist AI Worker that can act on your behalf.',
+  name: 'EMMA AI',
+  description: 'Your Intelligent Marketing Assistant that helps you create compelling content and grow your business.',
   cta: 'Start Free',
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  keywords: ['AI Worker', 'Generalist AI', 'Open Source AI', 'Autonomous Agent'],
+  keywords: ['Marketing AI', 'Content Creation', 'Marketing Assistant', 'AI Marketing'],
   links: {
     email: 'support@kortix.ai',
     twitter: 'https://x.com/kortixai',
@@ -107,7 +107,7 @@ export const siteConfig = {
         />
       </svg>
     ),
-    badge: '100% OPEN SOURCE',
+    badge: 'MARKETING AI ASSISTANT',
     githubUrl: 'https://github.com/kortix-ai/suna',
     title: 'Kortix – Build, manage and train your AI Workforce.',
     description:

@@ -62,9 +62,17 @@ def check_docker_compose_up():
 
 def print_manual_instructions():
     """Prints instructions for manually starting Suna services."""
-    print(f"\n{Colors.BLUE}{Colors.BOLD}🚀 Manual Startup Instructions{Colors.ENDC}\n")
+    print(f"\n{Colors.BLUE}{Colors.BOLD}🚀 Startup Options{Colors.ENDC}\n")
 
-    print("To start Suna, you need to run these commands in separate terminals:\n")
+    print(f"{Colors.GREEN}{Colors.BOLD}🌐 RECOMMENDED: Start with Ngrok (Internet Access + No Auth){Colors.ENDC}")
+    print(f"{Colors.CYAN}   ./start-app.sh{Colors.ENDC}")
+    print("   ✅ Automatic ngrok tunnels for internet access")
+    print("   ✅ No authentication required (login bypassed)")
+    print("   ✅ All services started automatically")
+    print("   ✅ Environment configured automatically\n")
+
+    print(f"{Colors.YELLOW}{Colors.BOLD}🏠 Alternative: Manual Local Setup{Colors.ENDC}")
+    print("To start Suna manually, run these commands in separate terminals:\n")
 
     print(f"{Colors.BOLD}1. Start Infrastructure (in project root):{Colors.ENDC}")
     print(f"{Colors.CYAN}   docker compose up redis -d{Colors.ENDC}\n")

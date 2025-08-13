@@ -20,6 +20,9 @@ from utils.constants import MODEL_ACCESS_TIERS, MODEL_NAME_ALIASES, HARDCODED_MO
 from litellm.cost_calculator import cost_per_token
 import time
 
+# Import no-auth bypass functions
+from utils.no_auth import no_auth_can_use_model, no_auth_check_billing_status
+
 # Initialize Stripe
 stripe.api_key = config.STRIPE_SECRET_KEY
 
@@ -577,6 +580,10 @@ async def get_allowed_models_for_user(client, user_id: str):
 
 
 async def can_use_model(client, user_id: str, model_name: str):
+    # Check if no-auth mode is enabled - bypass all restrictions
+    if getattr(config, 'NO_AUTH_MODE', False):
+        return await no_auth_can_use_model(client, user_id, model_name)
+
     if config.ENV_MODE == EnvMode.LOCAL:
         logger.info("Running in local development mode - billing checks are disabled")
         return True, "Local development mode - billing disabled", {
@@ -585,11 +592,20 @@ async def can_use_model(client, user_id: str, model_name: str):
             "minutes_limit": "no limit"
         }
 
+    # Handle anonymous users - allow free tier models only
+    if user_id == "anonymous":
+        logger.info("Anonymous user detected - allowing free tier models only")
+        resolved_model = MODEL_NAME_ALIASES.get(model_name, model_name)
+        free_tier_models = MODEL_ACCESS_TIERS.get('free', [])
+        if resolved_model in free_tier_models:
+            return True, "Anonymous access - free tier model allowed", free_tier_models
+        return False, f"Anonymous users can only use free tier models. Available models: {', '.join(free_tier_models)}", free_tier_models
+
     allowed_models = await get_allowed_models_for_user(client, user_id)
     resolved_model = MODEL_NAME_ALIASES.get(model_name, model_name)
     if resolved_model in allowed_models:
         return True, "Model access allowed", allowed_models
-    
+
     return False, f"Your current subscription plan does not include access to {model_name}. Please upgrade your subscription or choose from your available models: {', '.join(allowed_models)}", allowed_models
 
 async def get_subscription_tier(client, user_id: str) -> str:
@@ -619,16 +635,29 @@ async def get_subscription_tier(client, user_id: str) -> str:
 async def check_billing_status(client, user_id: str) -> Tuple[bool, str, Optional[Dict]]:
     """
     Check if a user can run agents based on their subscription and usage.
-    
+
     Returns:
         Tuple[bool, str, Optional[Dict]]: (can_run, message, subscription_info)
     """
+    # Check if no-auth mode is enabled - bypass all restrictions
+    if getattr(config, 'NO_AUTH_MODE', False):
+        return await no_auth_check_billing_status(client, user_id)
+
     if config.ENV_MODE == EnvMode.LOCAL:
         logger.info("Running in local development mode - billing checks are disabled")
         return True, "Local development mode - billing disabled", {
             "price_id": "local_dev",
             "plan_name": "Local Development",
             "minutes_limit": "no limit"
+        }
+
+    # Handle anonymous users - allow limited usage
+    if user_id == "anonymous":
+        logger.info("Anonymous user detected - allowing limited usage")
+        return True, "Anonymous access - limited usage allowed", {
+            "price_id": "anonymous",
+            "plan_name": "Anonymous Access",
+            "minutes_limit": "limited"
         }
 
     # Get current subscription

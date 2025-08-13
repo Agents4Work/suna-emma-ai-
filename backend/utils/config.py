@@ -38,6 +38,10 @@ class Configuration:
     
     # Environment mode
     ENV_MODE: EnvMode = EnvMode.LOCAL
+
+    # Complete authentication bypass for local single-user development
+    # When True, disables ALL authentication, billing, and access controls
+    NO_AUTH_MODE: bool = True
     
     # Subscription tier IDs - Production
     STRIPE_FREE_TIER_ID_PROD: str = 'price_1RILb4G6l1KZGqIrK4QLrx9i'
@@ -208,7 +212,7 @@ class Configuration:
     GEMINI_API_KEY: Optional[str] = None
     OPENROUTER_API_BASE: Optional[str] = "https://openrouter.ai/api/v1"
     OR_SITE_URL: Optional[str] = "https://kortix.ai"
-    OR_APP_NAME: Optional[str] = "Kortix AI"    
+    OR_APP_NAME: Optional[str] = "EMMA AI"
     
     # AWS Bedrock credentials
     AWS_ACCESS_KEY_ID: Optional[str] = None
@@ -252,8 +256,8 @@ class Configuration:
     STRIPE_PRODUCT_ID_STAGING: str = 'prod_SCgIj3G7yPOAWY'
     
     # Sandbox configuration
-    SANDBOX_IMAGE_NAME = "kortix/suna:0.1.3.1"
-    SANDBOX_SNAPSHOT_NAME = "kortix/suna:0.1.3.1"
+    SANDBOX_IMAGE_NAME = "emmaai/emma:0.1.3.1"
+    SANDBOX_SNAPSHOT_NAME = "emmaai/emma:0.1.3.1"
     SANDBOX_ENTRYPOINT = "/usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf"
 
     # LangFuse configuration
@@ -262,7 +266,7 @@ class Configuration:
     LANGFUSE_HOST: str = "https://cloud.langfuse.com"
 
     # Admin API key for server-side operations
-    KORTIX_ADMIN_API_KEY: Optional[str] = None
+    EMMA_ADMIN_API_KEY: Optional[str] = None
 
     # API Keys system configuration
     API_KEY_SECRET: str = "default-secret-key-change-in-production"

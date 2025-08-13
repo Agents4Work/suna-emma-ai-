@@ -136,7 +136,7 @@ export function Navbar() {
               <Link href="/" className="flex items-center gap-3">
                 <Image
                   src={logoSrc}
-                  alt="Kortix Logo"
+                  alt="EMMA AI Logo"
                   width={80}
                   height={14}
                   className="md:w-[100px] md:h-[18px]"

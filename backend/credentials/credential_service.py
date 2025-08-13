@@ -11,6 +11,7 @@ from cryptography.fernet import Fernet
 
 from services.supabase import DBConnection
 from utils.logger import logger
+from utils.config import config
 
 
 @dataclass(frozen=True)
@@ -102,6 +103,30 @@ class CredentialService:
     def __init__(self, db_connection: DBConnection):
         self._db = db_connection
         self._encryption = EncryptionService()
+        self._no_auth_mode = getattr(config, 'NO_AUTH_MODE', False)
+
+    def _get_default_credentials(self) -> Dict[str, Dict[str, Any]]:
+        """Return default credentials for no-auth mode."""
+        return {
+            'github': {
+                'token': 'no-auth-github-token',
+                'username': 'no-auth-user'
+            },
+            'slack': {
+                'token': 'no-auth-slack-token',
+                'workspace': 'no-auth-workspace'
+            },
+            'google': {
+                'api_key': 'no-auth-google-key',
+                'client_id': 'no-auth-client-id'
+            },
+            'openai': {
+                'api_key': 'no-auth-openai-key'
+            },
+            'anthropic': {
+                'api_key': 'no-auth-anthropic-key'
+            }
+        }
     
     async def store_credential(
         self,
@@ -146,30 +171,63 @@ class CredentialService:
         return credential_id
     
     async def get_credential(
-        self, 
-        account_id: str, 
+        self,
+        account_id: str,
         mcp_qualified_name: str
     ) -> Optional[MCPCredential]:
+        # In no-auth mode, return default credentials
+        if self._no_auth_mode:
+            default_creds = self._get_default_credentials()
+            if mcp_qualified_name in default_creds:
+                return MCPCredential(
+                    credential_id=f"no-auth-{mcp_qualified_name}",
+                    account_id=account_id,
+                    mcp_qualified_name=mcp_qualified_name,
+                    display_name=f"No-Auth {mcp_qualified_name.title()}",
+                    config=default_creds[mcp_qualified_name],
+                    is_active=True,
+                    created_at=datetime.now(timezone.utc),
+                    updated_at=datetime.now(timezone.utc)
+                )
+            return None
+
         client = await self._db.client
         result = await client.table('user_mcp_credentials').select('*')\
             .eq('account_id', account_id)\
             .eq('mcp_qualified_name', mcp_qualified_name)\
             .eq('is_active', True)\
             .execute()
-        
+
         if not result.data:
             return None
-        
+
         return self._map_to_credential(result.data[0])
     
     async def get_user_credentials(self, account_id: str) -> List[MCPCredential]:
+        # In no-auth mode, return all default credentials
+        if self._no_auth_mode:
+            default_creds = self._get_default_credentials()
+            credentials = []
+            for name, config in default_creds.items():
+                credentials.append(MCPCredential(
+                    credential_id=f"no-auth-{name}",
+                    account_id=account_id,
+                    mcp_qualified_name=name,
+                    display_name=f"No-Auth {name.title()}",
+                    config=config,
+                    is_active=True,
+                    created_at=datetime.now(timezone.utc),
+                    updated_at=datetime.now(timezone.utc)
+                ))
+            return credentials
+
         client = await self._db.client
         result = await client.table('user_mcp_credentials').select('*')\
             .eq('account_id', account_id)\
             .eq('is_active', True)\
             .order('created_at', desc=True)\
             .execute()
-        
+
         return [self._map_to_credential(data) for data in result.data]
     
     async def delete_credential(

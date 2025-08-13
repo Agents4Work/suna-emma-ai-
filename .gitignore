@@ -1,5 +1,10 @@
 .DS_Store
 
+# EMMA AI startup logs
+ngrok.log
+backend.log
+frontend.log
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

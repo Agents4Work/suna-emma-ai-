@@ -1,43 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { CTASection } from '@/components/home/sections/cta-section';
-// import { FAQSection } from "@/components/sections/faq-section";
-import { FooterSection } from '@/components/home/sections/footer-section';
-import { HeroSection } from '@/components/home/sections/hero-section';
-import { OpenSourceSection } from '@/components/home/sections/open-source-section';
-import { PricingSection } from '@/components/home/sections/pricing-section';
-import { UseCasesSection } from '@/components/home/sections/use-cases-section';
-import { ModalProviders } from '@/providers/modal-providers';
-import { HeroVideoSection } from '@/components/home/sections/hero-video-section';
-import { BackgroundAALChecker } from '@/components/auth/background-aal-checker';
-import { BentoSection } from '@/components/home/sections/bento-section';
-import { CompanyShowcase } from '@/components/home/sections/company-showcase';
-import { FeatureSection } from '@/components/home/sections/feature-section';
-import { QuoteSection } from '@/components/home/sections/quote-section';
-import { TestimonialSection } from '@/components/home/sections/testimonial-section';
-import { FAQSection } from '@/components/home/sections/faq-section';
-import { AgentShowcaseSection } from '@/components/home/sections/agent-showcase-section';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect directly to dashboard on page load
+    router.replace('/dashboard');
+  }, [router]);
+
+  // Show a simple loading state while redirecting
   return (
-    <>
-      <ModalProviders />
-      <BackgroundAALChecker>
-        <main className="flex flex-col items-center justify-center min-h-screen w-full">
-          <div className="w-full divide-y divide-border">
-            <HeroSection />
-            <BentoSection />
-            {/* <AgentShowcaseSection /> */}
-            <OpenSourceSection />
-            <PricingSection />
-            {/* <TestimonialSection /> */}
-            {/* <FAQSection /> */}
-            <CTASection />
-            <FooterSection />
-          </div>
-        </main>
-      </BackgroundAALChecker>
-    </>
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Redirecting to EMMA AI...</p>
+      </div>
+    </div>
   );
 }

@@ -14,11 +14,31 @@ import { Badge } from '../ui/badge';
 export default async function ManageTeams() {
   const supabaseClient = await createClient();
 
-  const { data } = await supabaseClient.rpc('get_accounts');
+  let data = null;
+  try {
+    // Check if user is authenticated first
+    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+
+    if (sessionError || !session?.user) {
+      console.log('No authentication available for teams');
+      data = [];
+    } else {
+      const result = await supabaseClient.rpc('get_accounts');
+      if (result.error) {
+        console.log('Error fetching accounts for teams:', result.error.message);
+        data = [];
+      } else {
+        data = result.data;
+      }
+    }
+  } catch (error) {
+    console.log('Error in ManageTeams:', error);
+    data = [];
+  }
 
   const teams: any[] = data?.filter(
     (team: any) => team.personal_account === false,
-  );
+  ) || [];
 
   return (
     <Card className="border-subtle dark:border-white/10 bg-white dark:bg-background-secondary shadow-none rounded-xl">

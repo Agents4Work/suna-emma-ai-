@@ -15,6 +15,7 @@ import asyncio
 from utils.logger import logger, structlog
 import time
 from collections import OrderedDict
+import os
 
 from pydantic import BaseModel
 import uuid
@@ -133,15 +134,25 @@ async def log_requests_middleware(request: Request, call_next):
 allowed_origins = ["https://www.suna.so", "https://suna.so"]
 allow_origin_regex = None
 
-# Add staging-specific origins
+# Allow localhost frontend in local mode
 if config.ENV_MODE == EnvMode.LOCAL:
     allowed_origins.append("http://localhost:3000")
 
-# Add staging-specific origins
+# Allow staging domains in staging mode
 if config.ENV_MODE == EnvMode.STAGING:
     allowed_origins.append("https://staging.suna.so")
     allowed_origins.append("http://localhost:3000")
     allow_origin_regex = r"https://suna-.*-prjcts\.vercel\.app"
+
+# Allow additional origins via env var (comma-separated), e.g. ngrok URLs
+extra_origins = os.getenv("CORS_ALLOWED_ORIGINS", "").strip()
+if extra_origins:
+    allowed_origins.extend([o.strip() for o in extra_origins.split(",") if o.strip()])
+
+# Allow origin regex override via env (e.g., ".*ngrok-free\.app$")
+extra_origin_regex = os.getenv("CORS_ALLOW_ORIGIN_REGEX")
+if extra_origin_regex:
+    allow_origin_regex = extra_origin_regex
 
 app.add_middleware(
     CORSMiddleware,
@@ -151,7 +162,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Project-Id", "X-MCP-URL", "X-MCP-Type", "X-MCP-Headers", "X-Refresh-Token", "X-API-Key"],
 )
-
 # Create a main API router
 api_router = APIRouter()
 

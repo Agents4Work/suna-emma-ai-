@@ -157,13 +157,19 @@ export const getAgents = async (params: AgentsParams = {}): Promise<AgentsRespon
   try {
     const agentPlaygroundEnabled = await isFlagEnabled('custom_agents');
     if (!agentPlaygroundEnabled) {
-      throw new Error('Custom agents is not enabled');
+      // Return empty agents list if feature is disabled
+      return { agents: [], total: 0 };
     }
     const supabase = createClient();
     const { data: { session } } = await supabase.auth.getSession();
 
-    if (!session) {
-      throw new Error('You must be logged in to get agents');
+    // Allow access without authentication - use anonymous access
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
     }
 
     const queryParams = new URLSearchParams();
@@ -181,10 +187,7 @@ export const getAgents = async (params: AgentsParams = {}): Promise<AgentsRespon
 
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
+      headers,
     });
 
     if (!response.ok) {
@@ -209,16 +212,18 @@ export const getAgent = async (agentId: string): Promise<Agent> => {
     const supabase = createClient();
     const { data: { session } } = await supabase.auth.getSession();
 
-    if (!session) {
-      throw new Error('You must be logged in to get agent details');
+    // Allow access without authentication - use anonymous access
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
     }
 
     const response = await fetch(`${API_URL}/agents/${agentId}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
+      headers,
     });
 
     if (!response.ok) {

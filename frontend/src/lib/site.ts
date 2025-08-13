@@ -1,7 +1,7 @@
 export const siteConfig = {
-  name: 'Kortix Suna',
+  name: 'EMMA AI',
   url: 'https://suna.so/',
-  description: 'Kortix AI',
+  description: 'EMMA AI - Your Intelligent Marketing Assistant',
   links: {
     twitter: 'https://x.com/kortixai',
     github: 'https://github.com/kortix-ai/',
